@@ -1,13 +1,19 @@
 package org.csp.client;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.entity.Entity;
+import org.csp.entity.RocketEntity;
 import org.csp.payload.UpdateRocketPayload;
 
 public class ClientNetworkHandler {
     public static void initialize() {
         ClientPlayNetworking.registerGlobalReceiver(UpdateRocketPayload.ID, (payload, context) -> {
             context.client().execute(() -> {
-                //update rocket
+                Entity entity = context.client().world.getEntityById(payload.rocketID());
+                if(entity instanceof RocketEntity rocketEntity){
+                    rocketEntity.setRocket(payload.rocketData());
+                    rocketEntity.setBoundingBox(rocketEntity.calculateBoundingBox());
+                }
             });
         });
     }

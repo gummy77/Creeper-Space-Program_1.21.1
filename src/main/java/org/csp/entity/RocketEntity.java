@@ -18,6 +18,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.csp.component.Rocket;
@@ -45,19 +46,24 @@ public class RocketEntity extends Entity {
 
         if(getWorld() instanceof ServerWorld) {
             networkUpdateData();
+            this.setBoundingBox(this.calculateBoundingBox());
         }
     }
 
     @Override
     public ActionResult interact(PlayerEntity player, Hand hand) {
 
-        System.out.println(this.getRocket() != null ? "Rocket is Real" : "Rocket Is not Real");
+        System.out.println(this.getRocket() != null ?  this.rocket.getWidth() : "Rocket Is not Real");
 
         return super.interact(player, hand);
     }
 
     public void addForce(float force, Vec3d offset) {
 
+    }
+
+    public void setRocket(Rocket rocket) {
+        this.rocket = rocket;
     }
 
     public Rocket getRocket() {
@@ -79,9 +85,18 @@ public class RocketEntity extends Entity {
         return true;
     }
 
+
+
+    @Override
+    public Box calculateBoundingBox() {
+        if(this.rocket != null) {
+            return Box.of(this.getPos().add(0, this.rocket.getHeight()/2, 0), this.rocket.getWidth(), this.rocket.getHeight(), this.rocket.getWidth());
+        } // TODO potentially add rotation? or something? so this looks more accurate when flying
+        return super.calculateBoundingBox();
+    }
+
     @Override
     protected void initDataTracker(DataTracker.Builder builder) {
-
     }
 
     public void networkUpdateData() {
@@ -93,7 +108,7 @@ public class RocketEntity extends Entity {
     }
 
     @Override
-    protected void readCustomDataFromNbt(NbtCompound nbt) {
+    public void readCustomDataFromNbt(NbtCompound nbt) {
         DataResult<Rocket> dataResult = Rocket.CODEC.parse(NbtOps.INSTANCE, nbt.getCompound("rocket_data"));
         if(dataResult.isSuccess()) {
             this.rocket = dataResult.getOrThrow();

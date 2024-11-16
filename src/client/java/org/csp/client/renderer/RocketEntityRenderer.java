@@ -30,21 +30,18 @@ public class RocketEntityRenderer extends EntityRenderer<RocketEntity> {
 
         if(entity.getRocket() != null) {
             matrices.push();
+            matrices.translate(-0.5f, 0f, -0.5f);
 
             ArrayList<RocketStage> stages = entity.getRocket().getStages();
             for (RocketStage stage : stages) {
                 ArrayList<RocketPart> parts = stage.getParts();
                 for (RocketPart part : parts) {
                     matrices.push();
-
                     matrices.translate(part.getOffset().getX(), part.getOffset().getY(), part.getOffset().getZ());
                     blockRenderManager.renderBlockAsEntity(part.getBlock(), matrices, vertexConsumers, light, OverlayTexture.DEFAULT_UV);
-
-
                     matrices.pop();
                 }
             }
-
             matrices.pop();
         }
     }

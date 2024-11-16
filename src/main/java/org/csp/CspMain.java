@@ -20,6 +20,7 @@ public class CspMain implements ModInitializer {
         ItemRegistry.initializeRegistry();
         BlockRegistry.initializeRegistry();
         EntityRegistry.initializeRegistry();
+        NetworkingConstants.registerPayloads();
 
         RocketPartRegistry.initializeRegistry();
 
