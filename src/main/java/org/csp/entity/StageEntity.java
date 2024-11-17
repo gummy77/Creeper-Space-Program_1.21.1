@@ -3,6 +3,7 @@ package org.csp.entity;
 import com.mojang.serialization.DataResult;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MovementType;
@@ -41,7 +42,12 @@ public class StageEntity extends Entity {
             networkUpdateData();
         }
 
+        if(verticalCollision) {
+            this.kill();
+        }
+
         this.addVelocity(new Vec3d(0, -0.05f, 0));
+        this.setVelocity(this.getVelocity().multiply(0.99f));
         this.move(MovementType.SELF, this.getVelocity());
     }
 
@@ -53,7 +59,6 @@ public class StageEntity extends Entity {
         }
         return super.handleAttack(attacker);
     }
-
 
     @Override
     protected void initDataTracker(DataTracker.Builder builder) {

@@ -27,7 +27,6 @@ public class RocketStage {
                 this.burnTimeRemaining += ((rocketPart.getFuelComponent().getCapactity() * rocketPart.getFuelComponent().getFillLevel()) * rocketPart.getFuelComponent().getBurnSpeed());
             }
         }
-        System.out.println("Calculated Burn Time: " + this.burnTimeRemaining);
     }
 
     public void setBurnTimeRemaining(float burnTimeRemaining) { this.burnTimeRemaining = burnTimeRemaining; }

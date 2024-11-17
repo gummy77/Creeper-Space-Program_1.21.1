@@ -36,6 +36,7 @@ public class RocketEntityRenderer extends EntityRenderer<RocketEntity> {
 
         if(entity.getRocket() != null) {
             matrices.push();
+            matrices.multiply(entity.getRocket().getState().getRotation());
             matrices.translate(-0.5f, 0f, -0.5f);
 
             ArrayList<RocketStage> stages = entity.getRocket().getStages();

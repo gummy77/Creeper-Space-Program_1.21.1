@@ -5,6 +5,7 @@ import com.mojang.serialization.DataResult;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MovementType;
@@ -23,8 +24,10 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.TimeHelper;
 import net.minecraft.util.TimeSupplier;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.apache.logging.log4j.core.pattern.NotANumber;
 import org.csp.component.Rocket;
 import org.csp.component.RocketPart;
 import org.csp.component.RocketStage;
@@ -32,6 +35,10 @@ import org.csp.component.RocketState;
 import org.csp.payload.UpdateRocketPayload;
 import org.csp.registry.EntityRegistry;
 import org.csp.registry.NetworkingConstants;
+import org.joml.Math;
+import org.joml.Quaterniond;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 
@@ -51,8 +58,6 @@ public class RocketEntity extends Entity {
 
     @Override
     public void tick() {
-        super.tick();
-
         if(getWorld() instanceof ServerWorld) {
             networkUpdateData();
             this.setBoundingBox(this.calculateBoundingBox());
@@ -74,17 +79,40 @@ public class RocketEntity extends Entity {
                 } else {
                     this.rocket.getState().setLaunchTimer(this.getRocket().getState().getLaunchTimer() - 0.05f); // 20 ticks/second -> 0.05s per tick
                 }
+                this.getRocket().getState().setRotation(this.getRocket().getState().getRotation().rotateLocalX(0.00001f));
             }
             case LAUNCHING -> {
+                this.updateRotation();
                 this.tickStages();
             }
             case COASTING -> {
+                this.updateRotation();
 
+                if(verticalCollision) {
+                    this.kill();
+                }
             }
         }
 
         this.addVelocity(new Vec3d(0, -0.05f, 0));
+        this.setVelocity(this.getVelocity().multiply(0.99f));
         this.move(MovementType.SELF, this.getVelocity());
+
+        super.tick();
+    }
+
+    private void updateRotation() {
+        Quaternionf rotation = new Quaternionf(this.getRocket().getState().getRotation());
+        Quaternionf velocityRotation = new Quaternionf().rotationTo(new Vector3f(0f, 1f, 0), this.getVelocity().toVector3f());
+
+        if(Float.isNaN(velocityRotation.x)) velocityRotation = new Quaternionf();
+
+        Quaternionf velocityDifference = new Quaternionf(velocityRotation);
+        Quaternionf newRotation = new Quaternionf(rotation);
+
+        newRotation.slerp(velocityDifference, 0.05f);
+
+        this.getRocket().getState().setRotation(new Quaternionf(newRotation));
     }
 
     private void tickStages() {
@@ -114,7 +142,7 @@ public class RocketEntity extends Entity {
 
                 // spawn stage entity
                 StageEntity stageEntity = new StageEntity(EntityRegistry.STAGE_ENTITY, getWorld());
-                stageEntity.setPosition(this.getPos());
+                stageEntity.setPosition(this.getPos()); // TODO when doing rotations fix this
                 stageEntity.setVelocity(this.getVelocity().multiply(0.9f));
                 stageEntity.readCustomDataFromNbt(nbt);
 
@@ -158,7 +186,9 @@ public class RocketEntity extends Entity {
     }
 
     public void addForce(float force, Vec3d offset) {
-        this.addVelocity(new Vec3d(0, force / 4750, 0));
+        Vector3f forceVector = this.getRocket().getState().getRotation().transformUnit(new Vector3f(0, 1, 0));
+        forceVector.mul(force / 4600);
+        this.addVelocity(forceVector.x, forceVector.y, forceVector.z);
     }
 
     public void setRocket(Rocket rocket) {
