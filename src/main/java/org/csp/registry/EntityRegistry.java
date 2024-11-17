@@ -11,10 +11,12 @@ import net.minecraft.util.Identifier;
 import org.csp.CspMain;
 import org.csp.entity.EntitySettings;
 import org.csp.entity.RocketEntity;
+import org.csp.entity.StageEntity;
 
 public class EntityRegistry {
 
     public static EntityType<RocketEntity> ROCKET_ENTITY = registerEntity("rocket_entity", RocketEntity::new, RocketEntity.settings);
+    public static EntityType<StageEntity> STAGE_ENTITY = registerEntity("stage_entity", StageEntity::new, StageEntity.settings);
 
 
     public static void initializeRegistry() {

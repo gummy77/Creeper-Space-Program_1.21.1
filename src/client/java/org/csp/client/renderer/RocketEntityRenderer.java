@@ -41,10 +41,10 @@ public class RocketEntityRenderer extends EntityRenderer<RocketEntity> {
             ArrayList<RocketStage> stages = entity.getRocket().getStages();
             int stageCounter = Math.min(entity.getRocket().getState().getCurrentStage(), stages.size()-1);
 
-            for(int i = 0; i <= stageCounter-1; i++) {
-                RocketStage stage = stages.get(i);
-                matrices.translate(0, -stage.getHeight(), 0);
-            }
+//            for(int i = 0; i <= stageCounter-1; i++) {
+//                RocketStage stage = stages.get(i);
+//                matrices.translate(0, -stage.getHeight(), 0);
+//            }
 
             for (int i = stageCounter; i < stages.size(); i++) {
                 RocketStage stage = stages.get(i);
@@ -55,6 +55,7 @@ public class RocketEntityRenderer extends EntityRenderer<RocketEntity> {
                     blockRenderManager.renderBlockAsEntity(part.getBlock(), matrices, vertexConsumers, light, OverlayTexture.DEFAULT_UV);
                     matrices.pop();
                 }
+                matrices.translate(0, stage.getHeight(), 0);
             }
             matrices.pop();
         }

@@ -43,24 +43,24 @@ public class RocketPartBlockEntity extends BlockEntity {
     }
 
     public void startAssembly(RocketPart.PartMaterial maxMaterial, BlockPos selectedBlock) {
-        int offset = 0;
-
         // find base block (lowest block)
         BlockPos lowestBlock = getLowestBlock(selectedBlock);
         BlockPos currentBlock = lowestBlock;
 
         // find stages (up to next engine)
         // TODO add height limit checks
-        ArrayList<RocketStage> stages = getMainSegments(currentBlock, offset);
+        ArrayList<RocketStage> stages = getMainSegments(currentBlock);
         if (stages.isEmpty()){
             return; // TODO fail Assembly
         }
 
-        offset = 0;
+        int offset = 0;
         for (RocketStage stage : stages) {
-            offset += stage.getParts().size();
+            offset += stage.getHeight();
         }
         currentBlock = currentBlock.up(offset);
+
+        offset = stages.get(stages.size()-1).getParts().size();
 
         // add Payload (if there)
         if(getPartAtPos(currentBlock).getType() == RocketPart.PartType.PAYLOAD) {
@@ -79,11 +79,13 @@ public class RocketPartBlockEntity extends BlockEntity {
         }
 
         // destroy blocks
+        int stageoffset = 0;
         for (RocketStage stage : stages) {
             ArrayList<RocketPart> parts = stage.getParts();
             for (RocketPart part : parts) {
-                world.breakBlock(lowestBlock.add(0, Math.round((float)part.getOffset().y), 0), false);
+                world.breakBlock(lowestBlock.add(0, Math.round((float)part.getOffset().y + stageoffset), 0), false);
             }
+            stageoffset += stage.getHeight();
         }
 
         // create NBT save data for rocket
@@ -125,11 +127,12 @@ public class RocketPartBlockEntity extends BlockEntity {
         return null;
     }
 
-    private ArrayList<RocketStage> getMainSegments(BlockPos currentPos, int offset) {
+    private ArrayList<RocketStage> getMainSegments(BlockPos currentPos) {
         ArrayList<RocketStage> stages = new ArrayList<>();
 
         RocketPart currentPart = getPartAtPos(currentPos);
         while (currentPart.getType() == RocketPart.PartType.ENGINE){
+            int offset = 0;
             RocketStage currentStage = new RocketStage();
             currentStage.addPart(currentPart.setOffset(new Vec3d(0, offset, 0)));
             currentPos = currentPos.up();

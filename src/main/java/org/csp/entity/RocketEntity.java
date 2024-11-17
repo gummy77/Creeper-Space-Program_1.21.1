@@ -1,5 +1,6 @@
 package org.csp.entity;
 
+import com.mojang.brigadier.context.ContextChain;
 import com.mojang.serialization.DataResult;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
@@ -26,8 +27,10 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.csp.component.Rocket;
 import org.csp.component.RocketPart;
+import org.csp.component.RocketStage;
 import org.csp.component.RocketState;
 import org.csp.payload.UpdateRocketPayload;
+import org.csp.registry.EntityRegistry;
 import org.csp.registry.NetworkingConstants;
 
 import java.util.ArrayList;
@@ -91,12 +94,35 @@ public class RocketEntity extends Entity {
         }
 
         if(this.getRocket().getCurrentStage().getBurnTimeRemaining() <= 0) {
-            if(this.getRocket().getState().getCurrentStage() < this.getRocket().getStages().size() - 1)
-                this.move(MovementType.SELF, new Vec3d(0, this.getRocket().getCurrentStage().getHeight(), 0)); // TODO when doing rotations fix this
-            this.getRocket().getState().stage();
+            this.stage();
         } else {
-            tickEngines();
+            this.tickEngines();
         }
+    }
+
+    private void stage() {
+        if(this.getRocket().getState().getCurrentStage() < this.getRocket().getStages().size() - 1) {
+            if (getWorld() instanceof ServerWorld) {
+                // create NBT save data for rocket
+                RocketStage stageData = this.getRocket().getCurrentStage();
+                NbtCompound nbt = new NbtCompound();
+
+                DataResult<NbtElement> dataResult = RocketStage.CODEC.encodeStart(NbtOps.INSTANCE, stageData);
+                if (dataResult.isSuccess()) {
+                    nbt.put("stage_data", dataResult.getOrThrow());
+                }
+
+                // spawn stage entity
+                StageEntity stageEntity = new StageEntity(EntityRegistry.STAGE_ENTITY, getWorld());
+                stageEntity.setPosition(this.getPos());
+                stageEntity.setVelocity(this.getVelocity().multiply(0.9f));
+                stageEntity.readCustomDataFromNbt(nbt);
+
+                getWorld().spawnEntity(stageEntity);
+            }
+            this.move(MovementType.SELF, new Vec3d(0, this.getRocket().getCurrentStage().getHeight(), 0)); // TODO when doing rotations fix this
+        }
+        this.getRocket().getState().stage();
     }
 
     private void tickEngines() {
