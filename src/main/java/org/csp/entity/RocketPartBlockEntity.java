@@ -101,8 +101,6 @@ public class RocketPartBlockEntity extends BlockEntity {
         rocketEntity.readCustomDataFromNbt(nbt);
 
         world.spawnEntity(rocketEntity);
-
-        System.out.println(rocketEntity.getRocket() != null ? "Rocket real" : "no data :(");
     }
 
     private RocketPart getPartAtPos(BlockPos pos) {
@@ -155,7 +153,7 @@ public class RocketPartBlockEntity extends BlockEntity {
                 currentPart = getPartAtPos(currentPos);
                 offset++;
             }
-
+            currentStage.calculateBurnTime();
             stages.add(currentStage);
         }
 

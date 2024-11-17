@@ -1,5 +1,6 @@
 package org.csp.client.renderer;
 
+import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -25,6 +26,11 @@ public class RocketEntityRenderer extends EntityRenderer<RocketEntity> {
     }
 
     @Override
+    public boolean shouldRender(RocketEntity entity, Frustum frustum, double x, double y, double z) {
+        return true; // TODO make this frustum culled with no distance limit?
+    }
+
+    @Override
     public void render(RocketEntity entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
         super.render(entity, yaw, tickDelta, matrices, vertexConsumers, light);
 
@@ -33,7 +39,15 @@ public class RocketEntityRenderer extends EntityRenderer<RocketEntity> {
             matrices.translate(-0.5f, 0f, -0.5f);
 
             ArrayList<RocketStage> stages = entity.getRocket().getStages();
-            for (RocketStage stage : stages) {
+            int stageCounter = Math.min(entity.getRocket().getState().getCurrentStage(), stages.size()-1);
+
+            for(int i = 0; i <= stageCounter-1; i++) {
+                RocketStage stage = stages.get(i);
+                matrices.translate(0, -stage.getHeight(), 0);
+            }
+
+            for (int i = stageCounter; i < stages.size(); i++) {
+                RocketStage stage = stages.get(i);
                 ArrayList<RocketPart> parts = stage.getParts();
                 for (RocketPart part : parts) {
                     matrices.push();

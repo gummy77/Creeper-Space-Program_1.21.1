@@ -48,7 +48,7 @@ public class RocketPartBlockItem extends BlockItem {
 //                  tooltip.add(Text.of("§7Max Payload: §2" + rocketPart.maxPayloadCapacity + "kg"));
 //                  break;
             if (rocketPart.getFuelComponent() != null) {
-                tooltip.add(Text.of("§7Burn Time: §2" + ((rocketPart.getFuelComponent().getCapactity() * rocketPart.getFuelComponent().getFillLevel()) * rocketPart.getFuelComponent().getBurnSpeed()) + "s"));
+                tooltip.add(Text.of("§7Fuel: §2" + ((rocketPart.getFuelComponent().getCapactity() * rocketPart.getFuelComponent().getFillLevel()) * rocketPart.getFuelComponent().getBurnSpeed()) + "fU"));
                 tooltip.add(Text.of("§7Fuel Type: §2" + rocketPart.getFuelComponent().getFuelType().name()));
                 if (rocketPart.getFuelComponent().getBurnPower() != 1f)
                     tooltip.add(Text.of("§7§o  Power Mod: §2x" + rocketPart.getFuelComponent().getBurnPower()));
@@ -57,6 +57,7 @@ public class RocketPartBlockItem extends BlockItem {
             }
             if (rocketPart.getEngineComponent() != null) {
                 tooltip.add(Text.of("§7Thrust: §2" + (rocketPart.getEngineComponent().getPower()) + "N"));
+                tooltip.add(Text.of("§7Fuel Consumption: §2" + (rocketPart.getEngineComponent().getFuelConsumption()) + "fU/s"));
             }
         }
     }

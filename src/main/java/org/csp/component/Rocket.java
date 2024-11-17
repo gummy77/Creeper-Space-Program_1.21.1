@@ -3,55 +3,72 @@ package org.csp.component;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.dynamic.Codecs;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.CheckedOutputStream;
 
 public class Rocket {
     private ArrayList<RocketStage> stages;
     private RocketState state;
 
-    private float cachedwidth = 0;
-    private float cachedheight = 0;
+    private float cachedWidth = 0;
+    private float cachedHeight = 0;
 
     public Rocket(ArrayList<RocketStage> stages) {
         this.stages = stages;
+        this.state = new RocketState(RocketState.LaunchState.IDLE);
+        this.cachedWidth = 0;
     }
-    public Rocket(List<RocketStage> stages) {
+    public Rocket(List<RocketStage> stages, RocketState state) {
         this.stages = new ArrayList<>(stages);
+        this.state = state;
+    }
+
+    public void createNewState() {
+        if (this.state == null) {
+            this.state = new RocketState(RocketState.LaunchState.IDLE);
+        }
+    }
+    public RocketState getState() {
+        return this.state;
     }
 
     public float getWidth() {
-        if (this.cachedwidth != 0) return this.cachedwidth;
+        if (this.cachedWidth != 0) return this.cachedWidth;
         float maxWidth = 0;
         for (RocketStage stage : stages) {
             for (RocketPart part : stage.getParts()) {
                 if(part.getWidth() > maxWidth) maxWidth = part.getWidth();
             }
         }
-        this.cachedwidth = maxWidth / 16f;
-        return this.cachedwidth;
+        this.cachedWidth = maxWidth / 16f;
+        return this.cachedWidth;
     }
     public float getHeight() {
-        if (this.cachedheight != 0) return this.cachedheight;
+        //if (this.cachedHeight != 0) return this.cachedHeight;
 
         int height = 0;
-        for (RocketStage stage : stages) {
-            height += stage.getParts().size();
+        int stageCounter = Math.min(this.state.getCurrentStage(), this.stages.size()-1);
+        for (int i = stageCounter; i < this.stages.size(); i++) {
+            RocketStage stage = this.stages.get(i);
+            height += stage.getHeight();
         }
-        this.cachedheight = height;
-        return this.cachedheight;
+        //this.cachedHeight = height;
+        return height;
+    }
+
+    public RocketStage getCurrentStage() {
+        if(this.state.getCurrentStage() > this.stages.size()-1) return null;
+        return this.stages.get(this.state.getCurrentStage());
     }
 
     public ArrayList<RocketStage> getStages() {
-        return stages;
+        return this.stages;
     }
 
     public static Codec<Rocket> CODEC = RecordCodecBuilder.create(builder ->
             builder.group(
-                    Codecs.nonEmptyList(RocketStage.CODEC.listOf()).fieldOf("stages").forGetter(Rocket::getStages)
+                    Codecs.nonEmptyList(RocketStage.CODEC.listOf()).fieldOf("stages").forGetter(Rocket::getStages),
+                    RocketState.CODEC.fieldOf("state").forGetter(Rocket::getState)
             ).apply(builder, Rocket::new));
 }
