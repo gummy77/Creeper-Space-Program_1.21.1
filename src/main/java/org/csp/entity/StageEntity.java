@@ -15,6 +15,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.csp.component.RocketStage;
@@ -42,8 +43,9 @@ public class StageEntity extends Entity {
             networkUpdateData();
         }
 
-        if(verticalCollision) {
+        if((verticalCollision || horizontalCollision || groundCollision) && getVelocity().length() > 0.5f) {
             this.kill();
+            this.setVelocity(Vec3d.ZERO);
         }
 
         this.addVelocity(new Vec3d(0, -0.05f, 0));
@@ -80,6 +82,14 @@ public class StageEntity extends Entity {
     @Override
     public boolean isCollidable() {
         return true;
+    }
+
+    @Override
+    public Box calculateBoundingBox() {
+        if(this.stage != null) {
+            return Box.of(this.getPos().add(0,this.stage.getHeight()/2f, 0), this.stage.getWidth(), this.stage.getHeight(), this.stage.getWidth());
+        } // TODO potentially add rotation? or something? so this looks more accurate when flying
+        return super.calculateBoundingBox();
     }
 
     public void networkUpdateData() {

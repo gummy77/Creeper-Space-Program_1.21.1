@@ -12,6 +12,10 @@ public class RocketStage {
     private ArrayList<RocketPart> parts;
     private float burnTimeRemaining;
 
+    private float cachedWidth = 0;
+
+    private float cachedMass = 0;
+
     public RocketStage() {
         this.parts = new ArrayList<>();
     }
@@ -48,6 +52,24 @@ public class RocketStage {
         return height;
     }
 
+    public float getWidth() {
+        if (this.cachedWidth != 0) return this.cachedWidth;
+        float maxWidth = 0;
+            for (RocketPart part : this.getParts()) {
+                if(part.getWidth() > maxWidth) maxWidth = part.getWidth();
+        }
+        this.cachedWidth = maxWidth / 16f;
+        return this.cachedWidth;
+    }
+    public float getMass() {
+        if (this.cachedMass != 0) return this.cachedMass;
+        float mass = 0;
+        for (RocketPart part : this.getParts()) {
+            mass += part.getMass();
+        }
+        this.cachedMass = mass;
+        return this.cachedMass;
+    }
 
     public static Codec<RocketStage> CODEC = RecordCodecBuilder.create(builder ->
             builder.group(

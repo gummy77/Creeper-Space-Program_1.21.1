@@ -23,22 +23,22 @@ public class RocketPartRegistry {
                             BlockRegistry.WOODEN_NOSE_CONE.getDefaultState(),
                             RocketPart.PartMaterial.WOOD,
                             RocketPart.PartType.NOSE,
-                            6, 2
+                            6, 25
                     ).build());
             registerRocketPart("rocket/wooden/fuel_segment",
                     new RocketPart.RocketPartBuilder(
                             BlockRegistry.WOODEN_FUEL_SEGMENT.getDefaultState(),
                             RocketPart.PartMaterial.WOOD,
                             RocketPart.PartType.FUEL,
-                            6, 3
+                            6, 100
                     ).addFuelComponent(new FuelComponent(3f, 1f, 1f, 1f, FuelComponent.FuelType.SOLID)).build());
             registerRocketPart("rocket/wooden/motor",
                     new RocketPart.RocketPartBuilder(
                             BlockRegistry.WOODEN_MOTOR.getDefaultState(),
                             RocketPart.PartMaterial.WOOD,
                             RocketPart.PartType.ENGINE,
-                            6, 3
-                    ).addEngineComponent(new EngineComponent(250f, 1, ParticleTypes.LARGE_SMOKE)).build());
+                            6, 50
+                    ).addEngineComponent(new EngineComponent(400f, 1, ParticleTypes.LARGE_SMOKE)).build());
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
         }

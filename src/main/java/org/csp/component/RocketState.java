@@ -35,7 +35,9 @@ public class RocketState {
     public void setRotation(Quaternionf rotation) { this.rotation = rotation; }
     public Quaternionf getRotation() { return rotation; }
 
-    public void stage() { this.currentStage++; }
+    public void stage() {
+        this.currentStage++;
+    }
     public int getCurrentStage() {
         return this.currentStage;
     }
